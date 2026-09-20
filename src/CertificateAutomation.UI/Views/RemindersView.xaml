@@ -1,0 +1,151 @@
+<UserControl x:Class="CertificateAutomation.UI.Views.RemindersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:CertificateAutomation.UI.Converters"
+             FlowDirection="RightToLeft">
+
+    <UserControl.Resources>
+        <conv:NullToVisibilityConverter x:Key="NullVis" />
+        <BooleanToVisibilityConverter x:Key="BoolVis" />
+
+        <!-- ظاهر ردیف: اگر انجام شده، خط‌خورده و کم‌رنگ -->
+        <Style x:Key="ReminderTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsCompletedThisMonth}" Value="True">
+                    <Setter Property="TextDecorations" Value="Strikethrough" />
+                    <Setter Property="Opacity" Value="0.5" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsActive}" Value="False">
+                    <Setter Property="Opacity" Value="0.4" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <DockPanel>
+            <!-- نوار بالا -->
+            <Border DockPanel.Dock="Top" Margin="0,0,0,12">
+                <Grid>
+                    <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource TextSubtitle}"
+                               Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center"
+                               Visibility="{Binding StatusMessage, Converter={StaticResource NullVis}}" />
+                    <Button Content="+ یادآور جدید" Style="{StaticResource PrimaryButton}"
+                            HorizontalAlignment="Left" Command="{Binding OpenNewEditorCommand}" />
+                </Grid>
+            </Border>
+
+            <!-- فهرست یادآورها -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Items}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource Card}" Margin="0,0,0,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- روز ماه به‌صورت دایرهٔ برجسته -->
+                                    <Border Grid.Column="0" Width="46" Height="46" CornerRadius="23"
+                                            Background="{DynamicResource WindowBackground}"
+                                            BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1.5"
+                                            Margin="0,0,14,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding DayOfMonth}" FontSize="16" FontWeight="Bold"
+                                                   Foreground="{DynamicResource AccentBrush}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+
+                                    <!-- تیک انجام‌شد -->
+                                    <CheckBox Grid.Column="1" VerticalAlignment="Center" Margin="0,0,14,0"
+                                              IsChecked="{Binding IsCompletedThisMonth, Mode=OneWay}"
+                                              Command="{Binding DataContext.ToggleDoneCommand,
+                                                       RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                              CommandParameter="{Binding}"
+                                              ToolTip="علامت زدن به‌عنوان انجام‌شده برای این ماه" />
+
+                                    <!-- عنوان و توضیحات -->
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Title}" Style="{StaticResource ReminderTitleStyle}" />
+                                        <TextBlock Text="{Binding Description}" Style="{StaticResource TextSubtitle}"
+                                                   Margin="0,4,0,0" TextWrapping="Wrap"
+                                                   Visibility="{Binding Description, Converter={StaticResource NullVis}}" />
+                                        <TextBlock Text="غیرفعال" FontSize="11" Foreground="{DynamicResource DangerBrush}"
+                                                   Margin="0,4,0,0"
+                                                   Visibility="{Binding IsActive, Converter={x:Static conv:InverseBoolToVisibilityConverter.Instance}}" />
+                                    </StackPanel>
+
+                                    <!-- عملیات -->
+                                    <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button Content="ویرایش" Style="{StaticResource GhostButton}"
+                                                Padding="10,5" FontSize="12" Margin="0,0,6,0"
+                                                Command="{Binding DataContext.OpenEditEditorCommand,
+                                                         RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}" />
+                                        <Button Content="حذف" Style="{StaticResource GhostButton}"
+                                                Padding="10,5" FontSize="12" Foreground="{DynamicResource DangerBrush}"
+                                                Command="{Binding DataContext.DeleteCommand,
+                                                         RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </DockPanel>
+
+        <!-- پنل شناور افزودن/ویرایش -->
+        <Border Background="#66000000" Visibility="{Binding IsEditorOpen, Converter={StaticResource BoolVis}}">
+            <Border Style="{StaticResource Card}" Width="420" MaxHeight="420"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="{Binding EditorHeading}" Style="{StaticResource TextBase}"
+                               FontWeight="SemiBold" FontSize="16" Margin="0,0,0,14" />
+
+                    <TextBlock Text="عنوان" Style="{StaticResource TextSubtitle}" Margin="0,0,0,4" />
+                    <TextBox Style="{StaticResource AppTextBox}" Text="{Binding EditTitle}" Margin="0,0,0,12" />
+
+                    <TextBlock Text="توضیحات (اختیاری)" Style="{StaticResource TextSubtitle}" Margin="0,0,0,4" />
+                    <TextBox Style="{StaticResource AppTextBox}" Text="{Binding EditDescription}"
+                             Height="60" TextWrapping="Wrap" AcceptsReturn="True"
+                             VerticalContentAlignment="Top" Margin="0,0,0,12" />
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                            <TextBlock Style="{StaticResource TextSubtitle}" Margin="0,0,0,4"
+                                       Text="روز ماه (۱ تا ۳۱)" />
+                            <TextBox Style="{StaticResource AppTextBox}" Text="{Binding EditDayOfMonth}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Bottom">
+                            <CheckBox Content="فعال" IsChecked="{Binding EditIsActive}"
+                                      FontFamily="{DynamicResource AppFont}"
+                                      Foreground="{DynamicResource TextPrimary}" Padding="6,8" />
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Style="{StaticResource TextSubtitle}" TextWrapping="Wrap" Margin="0,0,0,16"
+                               Text="این یادآور هر ماه، در همین روز، خودکار دوباره به فهرست «انجام‌نشده» برمی‌گردد. نیازی به ساخت دوباره در ماه‌های بعد نیست." />
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                        <Button Content="ذخیره" Style="{StaticResource PrimaryButton}"
+                                Command="{Binding SaveEditorCommand}" />
+                        <Button Content="انصراف" Style="{StaticResource GhostButton}" Margin="8,0,0,0"
+                                Command="{Binding CloseEditorCommand}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Border>
+    </Grid>
+</UserControl>

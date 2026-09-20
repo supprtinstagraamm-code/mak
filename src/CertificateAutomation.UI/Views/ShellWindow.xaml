@@ -1,0 +1,272 @@
+<Window x:Class="CertificateAutomation.UI.Views.ShellWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:CertificateAutomation.UI.ViewModels"
+        xmlns:views="clr-namespace:CertificateAutomation.UI.Views"
+        xmlns:conv="clr-namespace:CertificateAutomation.UI.Converters"
+        Title="سامانه اتوماسیون صدور گواهی"
+        Height="720" Width="1180" MinHeight="600" MinWidth="960"
+        WindowStartupLocation="CenterScreen"
+        FlowDirection="RightToLeft"
+        FontFamily="{DynamicResource AppFont}"
+        Background="{DynamicResource WindowBackground}">
+
+    <Window.Resources>
+        <!-- نگاشت ViewModel به View؛ ناوبری فقط با تعویض CurrentPage انجام می‌شود -->
+        <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
+            <views:DashboardView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:EmployeesViewModel}">
+            <views:EmployeesView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:IssueLetterViewModel}">
+            <views:IssueLetterView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:HistoryViewModel}">
+            <views:HistoryView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:TemplatesViewModel}">
+            <views:TemplatesView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:StatisticsViewModel}">
+            <views:StatisticsView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:RemindersViewModel}">
+            <views:RemindersView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:AdvancedSearchViewModel}">
+            <views:AdvancedSearchView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ProjectComparisonViewModel}">
+            <views:ProjectComparisonView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ActivityLogViewModel}">
+            <views:ActivityLogView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:DataQualityViewModel}">
+            <views:DataQualityView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+            <views:SettingsView />
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="230" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- نوار کناری (به‌دلیل RTL سمت راست قرار می‌گیرد) -->
+        <Border Grid.Column="0" Background="{DynamicResource SidebarBackground}">
+            <DockPanel LastChildFill="True">
+
+                <!-- سربرگ شرکت با لوگو -->
+                <StackPanel DockPanel.Dock="Top" Margin="16,20,16,16">
+                    <!-- لوگو: فقط وقتی مدیر عکسی تنظیم کرده باشد نمایش داده می‌شود.
+                         در یک کادر با ارتفاع ثابت و تمیز می‌نشیند. -->
+                    <Border Height="72" Margin="0,0,0,12" HorizontalAlignment="Center"
+                            Visibility="{Binding HasLogo, Converter={x:Static conv:BoolToVisibilityConverter.Instance}}">
+                        <Image Source="{Binding LogoImage}" Stretch="Uniform"
+                               MaxHeight="72" MaxWidth="180"
+                               RenderOptions.BitmapScalingMode="HighQuality" />
+                    </Border>
+                    <TextBlock Text="{Binding CompanyName}" Foreground="White"
+                               FontSize="16" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                               HorizontalAlignment="Center" TextAlignment="Center" />
+                    <TextBlock Text="اتوماسیون صدور گواهی" Foreground="#9DB3CC"
+                               FontSize="11" Margin="0,4,0,0"
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+
+                <!-- پایین نوار: شمارهٔ نسخه (تعویض تم و خروج به نوار بالا منتقل شدند) -->
+                <StackPanel DockPanel.Dock="Bottom" Margin="16,0,16,16">
+                    <TextBlock Text="{Binding AppVersion}" Foreground="#7E92A8"
+                               FontSize="11" Margin="4,10,0,0" />
+                </StackPanel>
+
+                <!-- منوی اصلی -->
+                <StackPanel Margin="0,4,0,0">
+                    <RadioButton Style="{StaticResource NavButton}" GroupName="Nav" IsChecked="True"
+                                 Command="{Binding NavigateCommand}" CommandParameter="dashboard">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource IconDashboard}" Width="18" Height="18" Stretch="Uniform"
+                                  Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                            <TextBlock Text="داشبورد" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Style="{StaticResource NavButton}" GroupName="Nav"
+                                 Command="{Binding NavigateCommand}" CommandParameter="reminders">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource IconReminder}" Width="18" Height="18" Stretch="Uniform"
+                                      Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                                <TextBlock Text="یادآورها" Margin="10,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <!-- نشان تعداد یادآورهای امروز -->
+                            <Border Background="#E76F51" CornerRadius="9" Height="18" MinWidth="18"
+                                    HorizontalAlignment="Left" VerticalAlignment="Center" Padding="4,0"
+                                    Visibility="{Binding DueReminderCount, Converter={x:Static conv:PositiveCountToVisibilityConverter.Instance}}">
+                                <TextBlock Text="{Binding DueReminderCount}" FontSize="10" FontWeight="Bold"
+                                           Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                        </Grid>
+                    </RadioButton>
+
+                    <RadioButton Style="{StaticResource NavButton}" GroupName="Nav"
+                                 Command="{Binding NavigateCommand}" CommandParameter="employees">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource IconEmployees}" Width="18" Height="18" Stretch="Uniform"
+                                  Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                            <TextBlock Text="کارکنان" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Style="{StaticResource NavButton}" GroupName="Nav"
+                                 Command="{Binding NavigateCommand}" CommandParameter="issue">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource IconIssue}" Width="18" Height="18" Stretch="Uniform"
+                                  Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                            <TextBlock Text="صدور نامه" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Style="{StaticResource NavButton}" GroupName="Nav"
+                                 Command="{Binding NavigateCommand}" CommandParameter="history">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource IconHistory}" Width="18" Height="18" Stretch="Uniform"
+                                  Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                            <TextBlock Text="سوابق نامه‌ها" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Style="{StaticResource NavButton}" GroupName="Nav"
+                                 Command="{Binding NavigateCommand}" CommandParameter="templates">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource IconTemplates}" Width="18" Height="18" Stretch="Uniform"
+                                  Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                            <TextBlock Text="قالب‌ها" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Style="{StaticResource NavButton}" GroupName="Nav"
+                                 Command="{Binding NavigateCommand}" CommandParameter="statistics">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource IconStats}" Width="18" Height="18" Stretch="Uniform"
+                                  Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                            <TextBlock Text="آمار و نمودارها" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Style="{StaticResource NavButton}" GroupName="Nav"
+                                 Command="{Binding NavigateCommand}" CommandParameter="advancedsearch">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource IconSearch}" Width="18" Height="18" Stretch="Uniform"
+                                  Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                            <TextBlock Text="جستجوی پیشرفته" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Style="{StaticResource NavButton}" GroupName="Nav"
+                                 Command="{Binding NavigateCommand}" CommandParameter="projectcomparison">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource IconCompare}" Width="18" Height="18" Stretch="Uniform"
+                                  Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                            <TextBlock Text="مقایسهٔ گروه‌ها" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Style="{StaticResource NavButton}" GroupName="Nav"
+                                 Command="{Binding NavigateCommand}" CommandParameter="dataquality">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource IconQuality}" Width="18" Height="18" Stretch="Uniform"
+                                  Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                            <TextBlock Text="سلامت داده‌ها" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Style="{StaticResource NavButton}" GroupName="Nav"
+                                 Command="{Binding NavigateCommand}" CommandParameter="activitylog">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource IconActivity}" Width="18" Height="18" Stretch="Uniform"
+                                  Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                            <TextBlock Text="لاگ فعالیت‌ها" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton Style="{StaticResource NavButton}" GroupName="Nav"
+                                 Command="{Binding NavigateCommand}" CommandParameter="settings">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource IconSettings}" Width="18" Height="18" Stretch="Uniform"
+                                  Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                            <TextBlock Text="تنظیمات" Margin="10,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- ناحیه محتوا -->
+        <DockPanel Grid.Column="1">
+
+            <!-- نوار بالای برنامه: لوگو، نام شرکت، کاربر، تم و خروج -->
+            <Border DockPanel.Dock="Top" Height="72"
+                    Background="{DynamicResource CardBackground}"
+                    BorderBrush="{DynamicResource BorderBrushSoft}" BorderThickness="0,0,0,1">
+                <Grid Margin="24,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- لوگو + نام شرکت -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Width="44" Height="44" Margin="0,0,12,0"
+                                Visibility="{Binding HasLogo, Converter={x:Static conv:BoolToVisibilityConverter.Instance}}">
+                            <Image Source="{Binding LogoImage}" Stretch="Uniform"
+                                   RenderOptions.BitmapScalingMode="HighQuality" />
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="{Binding CompanyName}" FontSize="15" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}" />
+                            <TextBlock Text="سامانه اتوماسیون صدور گواهی" FontSize="11"
+                                       Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- عنوان صفحهٔ جاری در وسط -->
+                    <TextBlock Grid.Column="1" Text="{Binding CurrentPage.Title}"
+                               FontSize="14" FontWeight="SemiBold" Opacity="0.55"
+                               Foreground="{DynamicResource TextPrimary}"
+                               VerticalAlignment="Center" HorizontalAlignment="Center" />
+
+                    <!-- عملیات سمت چپ -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding CurrentUserName}" FontSize="12"
+                                   Foreground="{DynamicResource TextSecondary}"
+                                   VerticalAlignment="Center" Margin="0,0,14,0" />
+                        <Button Content="تغییر روشن / تیره" Style="{StaticResource GhostButton}"
+                                Padding="12,6" FontSize="12" Margin="0,0,8,0"
+                                Command="{Binding ToggleThemeCommand}" />
+                        <Button Content="خروج" Style="{StaticResource GhostButton}"
+                                Padding="14,6" FontSize="12"
+                                Foreground="{DynamicResource DangerBrush}"
+                                Command="{Binding ExitCommand}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- محتوای صفحه -->
+            <DockPanel Margin="24,18,24,20">
+                <StackPanel DockPanel.Dock="Top" Margin="0,0,0,16">
+                    <TextBlock Text="{Binding CurrentPage.Title}" Style="{StaticResource TextTitle}" />
+                    <TextBlock Text="{Binding CurrentPage.Subtitle}" Style="{StaticResource TextSubtitle}" />
+                </StackPanel>
+
+                <ContentControl Content="{Binding CurrentPage}" />
+            </DockPanel>
+        </DockPanel>
+    </Grid>
+</Window>

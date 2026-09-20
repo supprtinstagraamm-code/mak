@@ -1,0 +1,32 @@
+<Window x:Class="CertificateAutomation.UI.Views.LoginDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ورود مدیر" Height="280" Width="400"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        FlowDirection="RightToLeft" FontFamily="{DynamicResource AppFont}"
+        Background="{DynamicResource WindowBackground}">
+    <Border Padding="24">
+        <StackPanel>
+            <TextBlock Text="ورود مدیر" Style="{StaticResource TextTitle}" />
+            <TextBlock Text="برای دسترسی به تنظیمات و عملیات محافظت‌شده وارد شوید."
+                       Style="{StaticResource TextSubtitle}" Margin="0,0,0,16" />
+
+            <TextBlock Text="نام کاربری" Style="{StaticResource TextSubtitle}" Margin="0,0,0,4" />
+            <TextBox x:Name="UsernameBox" Style="{StaticResource AppTextBox}" Text="admin" Margin="0,0,0,12" />
+
+            <TextBlock Text="رمز عبور" Style="{StaticResource TextSubtitle}" Margin="0,0,0,4" />
+            <PasswordBox x:Name="PasswordBox" Padding="10,8" FontSize="13"
+                         FontFamily="{DynamicResource AppFont}"
+                         KeyDown="PasswordBox_KeyDown" />
+
+            <TextBlock x:Name="ErrorText" Foreground="{DynamicResource DangerBrush}"
+                       FontSize="12" Margin="0,10,0,0" TextWrapping="Wrap" Visibility="Collapsed" />
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,18,0,0">
+                <Button Content="ورود" Style="{StaticResource PrimaryButton}" Click="Login_Click" IsDefault="True" />
+                <Button Content="انصراف" Style="{StaticResource GhostButton}" Margin="8,0,0,0"
+                        Click="Cancel_Click" IsCancel="True" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>

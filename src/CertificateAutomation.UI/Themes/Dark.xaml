@@ -1,0 +1,22 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- پالت تم تیره؛ کلیدها دقیقاً هم‌نام تم روشن هستند تا تعویض بدون خطا انجام شود -->
+    <Color x:Key="PrimaryColor">#3D7FC1</Color>
+    <Color x:Key="AccentColor">#22B8C4</Color>
+
+    <SolidColorBrush x:Key="PrimaryBrush"      Color="#3D7FC1" />
+    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="#4E90D2" />
+    <SolidColorBrush x:Key="AccentBrush"       Color="#22B8C4" />
+    <SolidColorBrush x:Key="WindowBackground"  Color="#12161C" />
+    <SolidColorBrush x:Key="SidebarBackground" Color="#182029" />
+    <SolidColorBrush x:Key="CardBackground"    Color="#1C242E" />
+    <SolidColorBrush x:Key="BorderBrushSoft"   Color="#2C3742" />
+    <SolidColorBrush x:Key="TextPrimary"       Color="#EAEFF5" />
+    <SolidColorBrush x:Key="TextSecondary"     Color="#9AA7B4" />
+    <SolidColorBrush x:Key="TextOnPrimary"     Color="#FFFFFF" />
+    <SolidColorBrush x:Key="SuccessBrush"      Color="#3DBB7B" />
+    <SolidColorBrush x:Key="DangerBrush"       Color="#E05A4B" />
+    <SolidColorBrush x:Key="WarningBrush"      Color="#F0C040" />
+
+</ResourceDictionary>

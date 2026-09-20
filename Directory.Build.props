@@ -1,0 +1,13 @@
+<Project>
+  <!-- تنظیمات مشترک همه پروژه‌ها -->
+  <PropertyGroup>
+    <LangVersion>10.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <Company>شرکت شما</Company>
+    <Product>سامانه اتوماسیون صدور گواهی</Product>
+    <Version>1.0.0</Version>
+    <NeutralLanguage>fa-IR</NeutralLanguage>
+  </PropertyGroup>
+</Project>

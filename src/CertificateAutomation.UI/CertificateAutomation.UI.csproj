@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <!-- WinForms فقط برای NotifyIcon (آیکون سینی سیستم و اعلان یادآورها) استفاده می‌شود. -->
+    <AssemblyName>CertificateAutomation</AssemblyName>
+    <RootNamespace>CertificateAutomation.UI</RootNamespace>
+    <!-- خروجی تک‌فایل خوداتکا با فرمان publish ساخته می‌شود، نه در حالت Debug -->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CertificateAutomation.Application\CertificateAutomation.Application.csproj" />
+    <ProjectReference Include="..\CertificateAutomation.Infrastructure\CertificateAutomation.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <!--
+    وقتی UseWindowsForms فعال است، SDK به‌طور خودکار «using System.Windows.Forms؛» و
+    «using System.Drawing؛» را به همهٔ فایل‌ها اضافه می‌کند (implicit global usings). چون
+    این دو فضای‌نام کلاس‌های هم‌نام با WPF دارند (UserControl، Color، Brush، Point،
+    FontFamily، KeyEventArgs و غیره)، در سرتاسر پروژهٔ WPF خطای ارجاع مبهم ایجاد می‌کنند.
+    این خطوط فقط همان using های خودکار را حذف می‌کنند؛ ارجاع به اسمبلی‌های WinForms/Drawing
+    دست‌نخورده می‌ماند، پس نام‌های کامل مثل System.Windows.Forms.NotifyIcon که در
+    TrayNotificationService.cs استفاده شده‌اند همچنان درست کار می‌کنند.
+  -->
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <!-- فونت فارسی: فایل Vazirmatn-Regular.ttf را در Assets/Fonts قرار دهید تا Embed شود -->
+  <ItemGroup>
+    <Resource Include="Assets\Fonts\*.ttf" />
+  </ItemGroup>
+</Project>

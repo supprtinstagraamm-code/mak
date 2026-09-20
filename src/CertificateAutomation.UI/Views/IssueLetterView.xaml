@@ -1,0 +1,394 @@
+<UserControl x:Class="CertificateAutomation.UI.Views.IssueLetterView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:CertificateAutomation.UI.Converters"
+             FlowDirection="RightToLeft">
+
+    <UserControl.Resources>
+        <conv:PersianDigitsConverter x:Key="Fa" />
+        <conv:NullToVisibilityConverter x:Key="NullVis" />
+        <BooleanToVisibilityConverter x:Key="BoolVis" />
+    </UserControl.Resources>
+
+    <DockPanel>
+        <!-- نشانگر مراحل -->
+        <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Padding="16,12" Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock Text="۱. انتخاب شخص" FontSize="13" Margin="12,0"
+                           FontWeight="{Binding IsStep1, Converter={x:Static conv:BoolToWeightConverter.Instance}}"
+                           Foreground="{Binding IsStep1, Converter={x:Static conv:BoolToAccentConverter.Instance}}" />
+                <TextBlock Text="◄" Foreground="{DynamicResource TextSecondary}" Margin="4,0" />
+                <TextBlock Text="۲. انتخاب قالب" FontSize="13" Margin="12,0"
+                           FontWeight="{Binding IsStep2, Converter={x:Static conv:BoolToWeightConverter.Instance}}"
+                           Foreground="{Binding IsStep2, Converter={x:Static conv:BoolToAccentConverter.Instance}}" />
+                <TextBlock Text="◄" Foreground="{DynamicResource TextSecondary}" Margin="4,0" />
+                <TextBlock Text="۳. پیش‌نمایش و صدور" FontSize="13" Margin="12,0"
+                           FontWeight="{Binding IsStep3, Converter={x:Static conv:BoolToWeightConverter.Instance}}"
+                           Foreground="{Binding IsStep3, Converter={x:Static conv:BoolToAccentConverter.Instance}}" />
+            </StackPanel>
+        </Border>
+
+        <!-- دکمه‌های ناوبری پایین -->
+        <Border DockPanel.Dock="Bottom" Margin="0,12,0,0">
+            <Grid>
+                <Button Content="مرحلهٔ قبل" Style="{StaticResource GhostButton}" HorizontalAlignment="Right"
+                        Command="{Binding BackCommand}"
+                        Visibility="{Binding CanGoBack, Converter={StaticResource BoolVis}}" />
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <!-- مرحلهٔ بعد (مراحل ۱ و ۲) -->
+                    <Button Content="مرحلهٔ بعد ◄" Style="{StaticResource PrimaryButton}"
+                            Command="{Binding NextCommand}"
+                            IsEnabled="{Binding CanGoNext}"
+                            Visibility="{Binding IsStep3, Converter={x:Static conv:InverseBoolToVisibilityConverter.Instance}}" />
+
+                    <!-- صدور نهایی (مرحله ۳، حالت تکی) -->
+                    <Button Content="✓ صدور و ثبت نامه" Style="{StaticResource PrimaryButton}"
+                            Command="{Binding IssueCommand}"
+                            IsEnabled="{Binding IsBusy, Converter={x:Static conv:InverseBoolConverter.Instance}}"
+                            Visibility="{Binding IsStep3Single, Converter={StaticResource BoolVis}}" />
+
+                    <!-- صدور نهایی (مرحله ۳، حالت گروهی) -->
+                    <Button Content="✓ صدور گروهی نامه‌ها" Style="{StaticResource PrimaryButton}"
+                            Command="{Binding IssueBulkCommand}"
+                            IsEnabled="{Binding IsBusy, Converter={x:Static conv:InverseBoolConverter.Instance}}"
+                            Visibility="{Binding IsStep3Bulk, Converter={StaticResource BoolVis}}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- محتوای مراحل -->
+        <Grid>
+            <!-- مرحله ۱: انتخاب شخص -->
+            <DockPanel Visibility="{Binding IsStep1, Converter={StaticResource BoolVis}}">
+
+                <!-- کلید چاپ گروهی -->
+                <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Padding="12" Margin="0,0,0,10">
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox Content="چاپ گروهی (صدور همان نامه برای چند نفر هم‌زمان)"
+                                  IsChecked="{Binding BulkMode}"
+                                  FontFamily="{DynamicResource AppFont}" FontWeight="SemiBold"
+                                  Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+
+                <!-- ===== حالت عادی: یک نفر ===== -->
+                <DockPanel Visibility="{Binding BulkMode, Converter={x:Static conv:InverseBoolToVisibilityConverter.Instance}}">
+                    <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Padding="12" Margin="0,0,0,10">
+                        <Grid>
+                            <TextBox x:Name="EmpSearch" Style="{StaticResource AppTextBox}"
+                                     Text="{Binding EmployeeSearch, UpdateSourceTrigger=PropertyChanged, Delay=50}" />
+                            <TextBlock Text="جستجوی شخص: نام، کد ملی، شماره عضویت…" IsHitTestVisible="False"
+                                       Foreground="{DynamicResource TextSecondary}" Opacity="0.7" Margin="12,0,0,0"
+                                       VerticalAlignment="Center"
+                                       Visibility="{Binding Text, ElementName=EmpSearch, Converter={x:Static conv:EmptyToVisibilityConverter.Instance}}" />
+                        </Grid>
+                    </Border>
+                    <Border Style="{StaticResource Card}" Padding="4">
+                        <DataGrid ItemsSource="{Binding Employees}" SelectedItem="{Binding SelectedEmployee}"
+                                  AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column"
+                                  SelectionMode="Single" GridLinesVisibility="Horizontal" Background="Transparent"
+                                  BorderThickness="0" RowHeight="34" FontSize="12"
+                                  MouseDoubleClick="EmployeeGrid_MouseDoubleClick"
+                                  HorizontalGridLinesBrush="{DynamicResource BorderBrushSoft}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="نام" Width="*" Binding="{Binding FirstName}" />
+                                <DataGridTextColumn Header="نام خانوادگی" Width="*" Binding="{Binding LastName}" />
+                                <DataGridTextColumn Header="کد ملی" Width="130"
+                                                    Binding="{Binding NationalId, Converter={StaticResource Fa}}" />
+                                <DataGridTextColumn Header="سمت" Width="*" Binding="{Binding Position}" />
+                                <DataGridTextColumn Header="واحد" Width="*" Binding="{Binding Unit}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </DockPanel>
+
+                <!-- ===== حالت گروهی: چند نفر با تیک ===== -->
+                <DockPanel Visibility="{Binding BulkMode, Converter={StaticResource BoolVis}}">
+                    <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Padding="12" Margin="0,0,0,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Text="فیلتر:" Style="{StaticResource TextSubtitle}"
+                                       VerticalAlignment="Center" Margin="0,0,10,0" />
+
+                            <ComboBox Grid.Column="1" ItemsSource="{Binding BulkFilterFields}"
+                                      SelectedItem="{Binding SelectedBulkFilterField}" DisplayMemberPath="DisplayName"
+                                      FontFamily="{DynamicResource AppFont}" Padding="8,6" FontSize="13"
+                                      MaxDropDownHeight="380" Margin="0,0,10,0" />
+
+                            <ComboBox Grid.Column="2" ItemsSource="{Binding BulkFilterValues}"
+                                      SelectedItem="{Binding SelectedBulkFilterValue}"
+                                      FontFamily="{DynamicResource AppFont}" Padding="8,6" FontSize="13"
+                                      MaxDropDownHeight="380" Margin="0,0,10,0" />
+
+                            <Button Grid.Column="3" Content="انتخاب فیلترشده‌ها" Style="{StaticResource GhostButton}"
+                                    Padding="10,6" FontSize="12" Margin="0,0,6,0"
+                                    Command="{Binding SelectAllFilteredCommand}" />
+                            <Button Grid.Column="4" Content="لغو همهٔ انتخاب‌ها" Style="{StaticResource GhostButton}"
+                                    Padding="10,6" FontSize="12"
+                                    Command="{Binding ClearBulkSelectionCommand}" />
+                        </Grid>
+                    </Border>
+
+                    <Border DockPanel.Dock="Top" Margin="0,0,0,10">
+                        <TextBlock Style="{StaticResource TextSubtitle}">
+                            <Run Text="تعداد انتخاب‌شده: " />
+                            <Run Text="{Binding BulkSelectedCount, Converter={StaticResource Fa}}"
+                                 FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" />
+                            <Run Text=" نفر از " />
+                            <Run Text="{Binding BulkEmployees.Count, Converter={StaticResource Fa}}" />
+                        </TextBlock>
+                    </Border>
+
+                    <Border Style="{StaticResource Card}" Padding="4">
+                        <DataGrid ItemsSource="{Binding BulkEmployees}"
+                                  AutoGenerateColumns="False" HeadersVisibility="Column"
+                                  SelectionMode="Extended" GridLinesVisibility="Horizontal" Background="Transparent"
+                                  BorderThickness="0" RowHeight="34" FontSize="12" CanUserAddRows="False"
+                                  HorizontalGridLinesBrush="{DynamicResource BorderBrushSoft}">
+                            <DataGrid.Columns>
+                                <DataGridCheckBoxColumn Header="انتخاب" Width="60"
+                                                        Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" />
+                                <DataGridTextColumn Header="نام" Width="*" IsReadOnly="True" Binding="{Binding FullName}" />
+                                <DataGridTextColumn Header="کد ملی" Width="130" IsReadOnly="True"
+                                                    Binding="{Binding NationalId, Converter={StaticResource Fa}}" />
+                                <DataGridTextColumn Header="سمت" Width="*" IsReadOnly="True" Binding="{Binding Position}" />
+                                <DataGridTextColumn Header="واحد" Width="*" IsReadOnly="True" Binding="{Binding Unit}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </DockPanel>
+            </DockPanel>
+
+            <!-- مرحله ۲: انتخاب قالب -->
+            <DockPanel Visibility="{Binding IsStep2, Converter={StaticResource BoolVis}}">
+                <Border DockPanel.Dock="Top" Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="شخص انتخاب‌شده: " Style="{StaticResource TextSubtitle}" />
+                            <TextBlock Text="{Binding SelectedEmployee.FullName}" Style="{StaticResource TextSubtitle}"
+                                       FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" />
+                        </StackPanel>
+                        <!-- انتخاب دستهٔ نامه: گواهی / ماموریت / معرفی‌نامه / همه -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="نوع نامه:" Style="{StaticResource TextSubtitle}"
+                                       VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}"
+                                      MinWidth="150" FontFamily="{DynamicResource AppFont}" Padding="8,6" FontSize="13" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource Card}" Padding="4">
+                    <Grid>
+                        <DataGrid ItemsSource="{Binding Templates}" SelectedItem="{Binding SelectedTemplate}"
+                                  AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column"
+                                  SelectionMode="Single" GridLinesVisibility="Horizontal" Background="Transparent"
+                                  BorderThickness="0" RowHeight="38" FontSize="13"
+                                  MouseDoubleClick="TemplateGrid_MouseDoubleClick"
+                                  HorizontalGridLinesBrush="{DynamicResource BorderBrushSoft}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="عنوان قالب" Width="2*" Binding="{Binding Title}" />
+                                <DataGridTextColumn Header="دسته" Width="*" Binding="{Binding Category}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <TextBlock Text="در این دسته قالبی نیست."
+                                   Style="{StaticResource TextSubtitle}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Visibility="{Binding Templates.Count, Converter={x:Static conv:ZeroToVisibilityConverter.Instance}}" />
+                    </Grid>
+                </Border>
+            </DockPanel>
+
+            <!-- مرحله ۳: پیش‌نمایش و صدور -->
+            <ScrollViewer Visibility="{Binding IsStep3, Converter={StaticResource BoolVis}}"
+                          VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <!-- خلاصه -->
+                    <Border Style="{StaticResource Card}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="شخص" Style="{StaticResource TextSubtitle}"
+                                           Visibility="{Binding BulkMode, Converter={x:Static conv:InverseBoolToVisibilityConverter.Instance}}" />
+                                <TextBlock Text="{Binding SelectedEmployee.FullName}" Style="{StaticResource TextBase}"
+                                           FontWeight="SemiBold" FontSize="14" Margin="0,2,0,0"
+                                           Visibility="{Binding BulkMode, Converter={x:Static conv:InverseBoolToVisibilityConverter.Instance}}" />
+
+                                <TextBlock Text="تعداد افراد (چاپ گروهی)" Style="{StaticResource TextSubtitle}"
+                                           Visibility="{Binding BulkMode, Converter={StaticResource BoolVis}}" />
+                                <TextBlock Text="{Binding BulkSelectedCount, Converter={StaticResource Fa}}" Style="{StaticResource TextBase}"
+                                           FontWeight="SemiBold" FontSize="14" Margin="0,2,0,0"
+                                           Visibility="{Binding BulkMode, Converter={StaticResource BoolVis}}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="قالب" Style="{StaticResource TextSubtitle}" />
+                                <TextBlock Text="{Binding SelectedTemplate.Title}" Style="{StaticResource TextBase}"
+                                           FontWeight="SemiBold" FontSize="14" Margin="0,2,0,0" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" HorizontalAlignment="Left">
+                                <TextBlock Text="شمارهٔ پیشنهادی" Style="{StaticResource TextSubtitle}"
+                                           Visibility="{Binding BulkMode, Converter={x:Static conv:InverseBoolToVisibilityConverter.Instance}}" />
+                                <StackPanel Orientation="Horizontal" Margin="0,2,0,0"
+                                            Visibility="{Binding BulkMode, Converter={x:Static conv:InverseBoolToVisibilityConverter.Instance}}">
+                                    <!-- دکمه‌های کم و زیاد کردن شماره، بدون تغییر ظاهر کلی -->
+                                    <Button Content="−" Command="{Binding DecreaseNumberCommand}"
+                                            Width="26" Height="26" Padding="0" FontSize="16" FontWeight="Bold"
+                                            VerticalContentAlignment="Center" Cursor="Hand"
+                                            Background="Transparent" BorderBrush="{DynamicResource BorderBrushSoft}"
+                                            Foreground="{DynamicResource AccentBrush}"
+                                            ToolTip="کاهش شماره" />
+                                    <TextBlock Text="{Binding PreviewNumber, Converter={StaticResource Fa}}"
+                                               FontWeight="Bold" FontSize="16" VerticalAlignment="Center"
+                                               Margin="8,0,8,0" MinWidth="90" TextAlignment="Center"
+                                               Foreground="{DynamicResource AccentBrush}" />
+                                    <Button Content="+" Command="{Binding IncreaseNumberCommand}"
+                                            Width="26" Height="26" Padding="0" FontSize="15" FontWeight="Bold"
+                                            VerticalContentAlignment="Center" Cursor="Hand"
+                                            Background="Transparent" BorderBrush="{DynamicResource BorderBrushSoft}"
+                                            Foreground="{DynamicResource AccentBrush}"
+                                            ToolTip="افزایش شماره" />
+                                </StackPanel>
+
+                                <TextBlock Text="شروع شماره‌گذاری از" Style="{StaticResource TextSubtitle}"
+                                           Visibility="{Binding BulkMode, Converter={StaticResource BoolVis}}" />
+                                <TextBlock Text="{Binding PreviewNumber, Converter={StaticResource Fa}}"
+                                           FontWeight="Bold" FontSize="16" Margin="0,2,0,0"
+                                           Foreground="{DynamicResource AccentBrush}"
+                                           Visibility="{Binding BulkMode, Converter={StaticResource BoolVis}}" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- هشدار فیلدهای خالی (فقط حالت تکی) -->
+                    <Border Style="{StaticResource Card}" Background="{DynamicResource WindowBackground}"
+                            Visibility="{Binding HasMissingFields, Converter={StaticResource BoolVis}}">
+                        <TextBlock Style="{StaticResource TextSubtitle}" TextWrapping="Wrap"
+                                   Foreground="{DynamicResource WarningBrush}"
+                                   Text="⚠ برخی فیلدهای الزامی مقدار ندارند. می‌توانید در جدول زیر آن‌ها را تکمیل کنید یا با مقدار خالی ادامه دهید." />
+                    </Border>
+
+                    <!-- جدول فیلدها (قابل ویرایش) — فقط حالت تکی -->
+                    <Border Style="{StaticResource Card}"
+                            Visibility="{Binding BulkMode, Converter={x:Static conv:InverseBoolToVisibilityConverter.Instance}}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="مقادیر فیلدهای قالب"
+                                       Style="{StaticResource TextBase}" FontWeight="SemiBold" Margin="0,0,0,4" />
+                            <TextBlock DockPanel.Dock="Top" Style="{StaticResource TextSubtitle}" Margin="0,0,0,10"
+                                       Text="این مقادیر در نامه جایگزین می‌شوند. فیلدهای خالی را می‌توانید همین‌جا وارد کنید." />
+                            <DataGrid ItemsSource="{Binding Fields}" AutoGenerateColumns="False"
+                                      HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                                      Background="Transparent" BorderThickness="0" RowHeight="34" FontSize="12"
+                                      CanUserAddRows="False" CanUserDeleteRows="False"
+                                      HorizontalGridLinesBrush="{DynamicResource BorderBrushSoft}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="فیلد" Width="*" IsReadOnly="True"
+                                                        Binding="{Binding DisplayName}" />
+                                    <DataGridTextColumn Header="مقدار" Width="1.5*"
+                                                        Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}" />
+                                    <DataGridTextColumn Header="منبع" Width="90" IsReadOnly="True"
+                                                        Binding="{Binding Source}" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- خلاصهٔ چاپ گروهی — فقط حالت گروهی -->
+                    <Border Style="{StaticResource Card}"
+                            Visibility="{Binding BulkMode, Converter={StaticResource BoolVis}}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="فهرست افراد انتخاب‌شده"
+                                       Style="{StaticResource TextBase}" FontWeight="SemiBold" Margin="0,0,0,4" />
+                            <TextBlock DockPanel.Dock="Top" Style="{StaticResource TextSubtitle}" Margin="0,0,0,10"
+                                       Text="فیلدها فقط از اطلاعات هر فرد (Excel) پر می‌شوند؛ ویرایش دستی تک‌تک برای گروه امکان‌پذیر نیست." />
+                            <DataGrid ItemsSource="{Binding BulkEmployees}" AutoGenerateColumns="False"
+                                      IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                                      Background="Transparent" BorderThickness="0" RowHeight="30" FontSize="12"
+                                      MaxHeight="240" CanUserAddRows="False"
+                                      HorizontalGridLinesBrush="{DynamicResource BorderBrushSoft}">
+                                <DataGrid.Columns>
+                                    <DataGridCheckBoxColumn Header="انتخاب" Width="60" IsReadOnly="True"
+                                                            Binding="{Binding IsSelected}" />
+                                    <DataGridTextColumn Header="نام" Width="*" Binding="{Binding FullName}" />
+                                    <DataGridTextColumn Header="کد ملی" Width="130"
+                                                        Binding="{Binding NationalId, Converter={StaticResource Fa}}" />
+                                    <DataGridTextColumn Header="واحد" Width="*" Binding="{Binding Unit}" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- تعداد نسخه و توضیحات -->
+                    <Border Style="{StaticResource Card}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Top" Margin="0,0,20,0">
+                                <TextBlock Text="تعداد نسخه" Style="{StaticResource TextSubtitle}" Margin="0,0,0,4" />
+                                <TextBox Style="{StaticResource AppTextBox}" Width="80" HorizontalAlignment="Right"
+                                         Text="{Binding Copies}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="توضیحات (اختیاری)" Style="{StaticResource TextSubtitle}" Margin="0,0,0,4" />
+                                <TextBox Style="{StaticResource AppTextBox}" Height="60" TextWrapping="Wrap"
+                                         AcceptsReturn="True" VerticalContentAlignment="Top"
+                                         Text="{Binding Description}" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- چاپگر و گزینه‌های چاپ -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="چاپ و خروجی" Style="{StaticResource TextBase}"
+                                       FontWeight="SemiBold" Margin="0,0,0,10" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                                    <TextBlock Text="چاپگر" Style="{StaticResource TextSubtitle}" Margin="0,0,0,4" />
+                                    <ComboBox ItemsSource="{Binding Printers}" SelectedItem="{Binding SelectedPrinter}"
+                                              FontFamily="{DynamicResource AppFont}" Padding="8,6" FontSize="13" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Bottom">
+                                    <CheckBox Content="چاپ پس از صدور" IsChecked="{Binding PrintAfterIssue}"
+                                              FontFamily="{DynamicResource AppFont}" Foreground="{DynamicResource TextPrimary}"
+                                              Margin="0,0,0,6" />
+                                    <CheckBox Content="ذخیرهٔ خروجی PDF" IsChecked="{Binding SavePdfAfterIssue}"
+                                              FontFamily="{DynamicResource AppFont}" Foreground="{DynamicResource TextPrimary}" />
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock Style="{StaticResource TextSubtitle}" Margin="0,10,0,0" TextWrapping="Wrap"
+                                       Text="برای خروجی PDF باید Microsoft Word یا LibreOffice روی سیستم نصب باشد. اگر هیچ‌کدام نبود، سند Word ساخته می‌شود و می‌توانید آن را دستی به PDF تبدیل کنید." />
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Style="{StaticResource TextSubtitle}" Margin="4,4,0,0" TextWrapping="Wrap"
+                               Visibility="{Binding BulkMode, Converter={x:Static conv:InverseBoolToVisibilityConverter.Instance}}"
+                               Text="با فشردن «صدور و ثبت نامه»، شمارهٔ نهایی تخصیص می‌یابد، سند ساخته و در سوابق ثبت می‌شود. تا این لحظه هیچ شماره‌ای مصرف نشده است." />
+                    <TextBlock Style="{StaticResource TextSubtitle}" Margin="4,4,0,0" TextWrapping="Wrap"
+                               Visibility="{Binding BulkMode, Converter={StaticResource BoolVis}}"
+                               Text="با فشردن «صدور گروهی نامه‌ها»، برای هرکدام از افراد انتخاب‌شده یک سند جداگانه با شمارهٔ منحصربه‌فرد ساخته و ثبت می‌شود." />
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </DockPanel>
+</UserControl>
