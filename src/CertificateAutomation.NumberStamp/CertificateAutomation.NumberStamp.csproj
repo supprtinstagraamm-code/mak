@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    ابزار شناور «ثبت شماره». یک فایل اجرایی کاملاً مجزا از برنامهٔ اصلی که می‌تواند حتی
+    بدون باز بودن برنامهٔ اصلی اجرا شود و همان پایگاه‌دادهٔ SQLite را به اشتراک می‌گذارد
+    (از طریق همان AppPaths/SqliteConnectionFactory در CertificateAutomation.Infrastructure)،
+    تا شمارندهٔ نامه بین این دو برنامه همیشه یکی و بدون تداخل بماند.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>NumberStamp</AssemblyName>
+    <RootNamespace>CertificateAutomation.NumberStamp</RootNamespace>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CertificateAutomation.Application\CertificateAutomation.Application.csproj" />
+    <ProjectReference Include="..\CertificateAutomation.Infrastructure\CertificateAutomation.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,41 @@
+name: Build portable publish
+
+# ساخت خودکار نسخهٔ قابل‌اجرای مستقیم (بدون نصب) هر بار که به main پوش می‌شود،
+# یا به‌صورت دستی از تب Actions با دکمهٔ "Run workflow".
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Publish main app
+        run: >
+          dotnet publish src\CertificateAutomation.UI\CertificateAutomation.UI.csproj
+          -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true
+          -o publish
+
+      - name: Publish NumberStamp tool
+        run: >
+          dotnet publish src\CertificateAutomation.NumberStamp\CertificateAutomation.NumberStamp.csproj
+          -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true
+          -o publish
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: publish-portable
+          path: publish
+          retention-days: 30

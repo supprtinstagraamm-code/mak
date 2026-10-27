@@ -143,7 +143,7 @@
                             <Run Text="{Binding BulkSelectedCount, Converter={StaticResource Fa}}"
                                  FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" />
                             <Run Text=" نفر از " />
-                            <Run Text="{Binding BulkEmployees.Count, Converter={StaticResource Fa}}" />
+                            <Run Text="{Binding BulkEmployees.Count, Mode=OneWay, Converter={StaticResource Fa}}" />
                         </TextBlock>
                     </Border>
 

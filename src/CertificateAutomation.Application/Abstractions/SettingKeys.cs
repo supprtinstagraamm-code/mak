@@ -17,4 +17,10 @@ public static class SettingKeys
     public const string AutoImportOnStartup = "AutoImportOnStartup";
     public const string AdminLockMinutes = "AdminLockMinutes";
     public const string MustChangePassword = "MustChangePassword";
+
+    // --- ابزار شناور ثبت شماره (NumberStamp) ---
+    /// <summary>فاصلهٔ دکمهٔ شناور از لبهٔ راست صفحه (پیکسل).</summary>
+    public const string NumberStampPosX = "NumberStamp.PosX";
+    /// <summary>فاصلهٔ دکمهٔ شناور از بالای صفحه (پیکسل).</summary>
+    public const string NumberStampPosY = "NumberStamp.PosY";
 }

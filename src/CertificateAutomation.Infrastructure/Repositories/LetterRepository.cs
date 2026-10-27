@@ -15,7 +15,7 @@ public class LetterRepository : ILetterRepository
 Id, LetterNumber, JalaliYear, Serial, IssuedAtUtc, JalaliDate, IssuedTime, EmployeeId,
 SnapFirstName, SnapLastName, SnapNationalId, SnapMembershipNo, SnapPosition, SnapUnit,
 TemplateId, SnapTemplateTitle, DataSnapshotJson, PrintCount, LastPrintedAt,
-ArchivePdfPath, Description, IsDeleted, DeletedAt, DeletedBy";
+ArchivePdfPath, Description, IsManualEntry, IsDeleted, DeletedAt, DeletedBy";
 
     private readonly ISqliteConnectionFactory _factory;
 

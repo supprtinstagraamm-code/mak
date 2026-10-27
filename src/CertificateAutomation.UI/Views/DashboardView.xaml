@@ -134,9 +134,9 @@
                                 <DataGridTextColumn Header="ساعت" Width="70"
                                                     Binding="{Binding IssuedTime, Converter={StaticResource Fa}}" />
                                 <DataGridTextColumn Header="نام شخص" Width="*"
-                                                    Binding="{Binding SnapFullName}" />
+                                                    Binding="{Binding DisplayPerson}" />
                                 <DataGridTextColumn Header="نوع نامه" Width="*"
-                                                    Binding="{Binding SnapTemplateTitle}" />
+                                                    Binding="{Binding DisplayTemplateTitle}" />
                                 <DataGridTextColumn Header="دفعات چاپ" Width="90"
                                                     Binding="{Binding PrintCount, Converter={StaticResource Fa}}" />
                             </DataGrid.Columns>

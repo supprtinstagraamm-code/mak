@@ -99,10 +99,10 @@
                                         Binding="{Binding JalaliDate, Converter={StaticResource Fa}}" />
                     <DataGridTextColumn Header="ساعت" Width="60"
                                         Binding="{Binding IssuedTime, Converter={StaticResource Fa}}" />
-                    <DataGridTextColumn Header="نام شخص" Width="*" Binding="{Binding SnapFullName}" />
+                    <DataGridTextColumn Header="نام شخص" Width="*" Binding="{Binding DisplayPerson}" />
                     <DataGridTextColumn Header="کد ملی" Width="120"
                                         Binding="{Binding SnapNationalId, Converter={StaticResource Fa}}" />
-                    <DataGridTextColumn Header="نوع نامه" Width="*" Binding="{Binding SnapTemplateTitle}" />
+                    <DataGridTextColumn Header="نوع نامه" Width="*" Binding="{Binding DisplayTemplateTitle}" />
                     <DataGridTextColumn Header="دفعات چاپ" Width="80"
                                         Binding="{Binding PrintCount, Converter={StaticResource Fa}}" />
                 </DataGrid.Columns>

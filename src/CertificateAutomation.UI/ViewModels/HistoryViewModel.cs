@@ -133,6 +133,15 @@ public partial class HistoryViewModel : PageViewModelBase
             return;
         }
 
+        if (SelectedLetter.IsManualEntry)
+        {
+            ShowMessage(
+                "این ردیف فقط یک «ثبت دستی شماره» است و سندی برای چاپ ندارد.\n" +
+                "این نامه بیرون از این سامانه نوشته شده و فقط شماره‌اش اینجا رزرو شده است.",
+                "چاپ مجدد", MessageBoxImage.Information);
+            return;
+        }
+
         try
         {
             IsBusy = true;

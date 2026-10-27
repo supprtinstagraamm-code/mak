@@ -26,6 +26,7 @@ public class LetterIssueService : ILetterIssueService
     private readonly IDocumentRenderer _renderer;
     private readonly ISettingsService _settings;
     private readonly IAuditRepository _audit;
+    private readonly IManualNumberLogService _manualLog;
     private readonly IAppLogger _logger;
 
     public LetterIssueService(
@@ -39,6 +40,7 @@ public class LetterIssueService : ILetterIssueService
         IDocumentRenderer renderer,
         ISettingsService settings,
         IAuditRepository audit,
+        IManualNumberLogService manualLog,
         IAppLogger logger)
     {
         _factory = factory;
@@ -51,6 +53,7 @@ public class LetterIssueService : ILetterIssueService
         _renderer = renderer;
         _settings = settings;
         _audit = audit;
+        _manualLog = manualLog;
         _logger = logger;
     }
 
@@ -408,6 +411,95 @@ FROM Letters WHERE Id = @letterId AND IsDeleted = 0;", new { letterId });
 
         _logger.Info($"خروجی PDF نامهٔ {letterId} ساخته شد.");
         return Result.Success(pdfPath);
+    }
+
+    /// <summary>
+    /// ثبت دستی شماره: فقط رزرو اتمیک شمارهٔ بعدی + یک رکورد سبک در جدول Letters
+    /// (بدون کارمند/قالب/سند)، به‌علاوهٔ یک سطر در فایل اکسل مجزای ثبت‌های دستی.
+    /// از ابزار شناور یا از داخل خود برنامه صدا زده می‌شود.
+    /// </summary>
+    public async Task<Result<ManualNumberResult>> IssueManualNumberAsync(
+        string description, string? registeredBy, CancellationToken ct = default)
+    {
+        var year = PersianDate.CurrentYear;
+        var jalaliDate = PersianDate.Today();
+        var time = PersianDate.CurrentTime();
+        description = (description ?? string.Empty).Trim();
+
+        long newId;
+        int serial;
+        string number;
+
+        // --- تراکنش اتمیک: دقیقاً همان مکانیزم صدور نامهٔ عادی (رزرو شماره + درج رکورد) ---
+        using (var db = _factory.Create())
+        using (var tx = db.BeginTransaction())
+        {
+            try
+            {
+                int allocYear;
+                (allocYear, serial, number) = _allocator.AllocateSerialInTransaction(db, tx, year);
+
+                newId = db.ExecuteScalar<long>(@"
+INSERT INTO Letters
+(LetterNumber, JalaliYear, Serial, IssuedAtUtc, JalaliDate, IssuedTime,
+ SnapTemplateTitle, PrintCount, Description, IsManualEntry, IsDeleted)
+VALUES
+(@LetterNumber, @JalaliYear, @Serial, @IssuedAtUtc, @JalaliDate, @IssuedTime,
+ @SnapTemplateTitle, 0, @Description, 1, 0);
+SELECT last_insert_rowid();",
+                    new
+                    {
+                        LetterNumber = number,
+                        JalaliYear = allocYear,
+                        Serial = serial,
+                        IssuedAtUtc = DateTime.UtcNow.ToString("o"),
+                        JalaliDate = jalaliDate,
+                        IssuedTime = time,
+                        SnapTemplateTitle = "ثبت دستی شماره",
+                        Description = string.IsNullOrWhiteSpace(description) ? null : description
+                    }, tx);
+
+                tx.Commit();
+            }
+            catch (Exception ex)
+            {
+                try { tx.Rollback(); } catch { /* ignore */ }
+                _logger.Error("ثبت دستی شماره ناموفق بود؛ تراکنش برگردانده شد.", ex);
+                return Result.Failure<ManualNumberResult>(
+                    $"ثبت شماره با خطا مواجه شد و هیچ شماره‌ای مصرف نشد.\n\nشرح فنی: {ex.Message}");
+            }
+        }
+
+        _logger.Info($"ثبت دستی شماره: {number} ({(string.IsNullOrWhiteSpace(registeredBy) ? "نامشخص" : registeredBy)}).");
+
+        var result = new ManualNumberResult
+        {
+            LetterId = newId,
+            LetterNumber = number,
+            JalaliYear = year,
+            Serial = serial,
+            JalaliDate = jalaliDate,
+            Time = time,
+            Description = description
+        };
+
+        // ثبت سطر اکسل: اگر خطا بدهد (مثلاً فایل باز است)، شماره همچنان معتبر و ثبت‌شده می‌ماند؛
+        // فقط به‌عنوان هشدار برمی‌گردد.
+        var excelResult = _manualLog.AppendEntry(jalaliDate, time, number, year, serial, description, registeredBy);
+        if (excelResult.IsFailure)
+        {
+            result.ExcelWarning = excelResult.Error;
+            _logger.Warn($"ثبت سطر اکسل برای شمارهٔ {number} ناموفق بود: {excelResult.Error}");
+        }
+
+        await SafeAuditAsync(
+            "ManualNumber", "Letter", newId,
+            $"ثبت دستی شمارهٔ {number}" +
+            (string.IsNullOrWhiteSpace(description) ? "" : $" — {description}") +
+            (string.IsNullOrWhiteSpace(registeredBy) ? "" : $" (ثبت‌کننده: {registeredBy})"),
+            ct);
+
+        return Result.Success(result);
     }
 
     private async Task SafeAuditAsync(string action, string entity, long id, string details, CancellationToken ct)

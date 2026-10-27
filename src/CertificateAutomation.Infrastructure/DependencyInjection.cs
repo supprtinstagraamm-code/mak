@@ -36,6 +36,7 @@ public static class DependencyInjection
         services.AddSingleton<Services.NumberGenerator>();
         services.AddSingleton<INumberGenerator>(sp => sp.GetRequiredService<Services.NumberGenerator>());
         services.AddSingleton<Services.IAtomicSerialAllocator>(sp => sp.GetRequiredService<Services.NumberGenerator>());
+        services.AddSingleton<IManualNumberLogService, Excel.ManualNumberExcelLogger>();
         services.AddTransient<ILetterIssueService, Services.LetterIssueService>();
 
         // موتورهای تبدیل/چاپ: هر سه ثبت می‌شوند و Composite بهترین در دسترس را انتخاب می‌کند.

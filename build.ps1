@@ -23,7 +23,7 @@ Write-Host "======================================================" -ForegroundC
 Write-Host ""
 
 # بررسی نصب .NET SDK
-Write-Host "[1/4] بررسی .NET SDK..." -ForegroundColor Yellow
+Write-Host "[1/5] بررسی .NET SDK..." -ForegroundColor Yellow
 try {
     $dotnetVersion = dotnet --version
     Write-Host "      .NET SDK نسخهٔ $dotnetVersion یافت شد." -ForegroundColor Green
@@ -35,21 +35,33 @@ try {
 
 # پاک‌سازی خروجی قبلی
 Write-Host ""
-Write-Host "[2/4] پاک‌سازی خروجی‌های قبلی..." -ForegroundColor Yellow
+Write-Host "[2/5] پاک‌سازی خروجی‌های قبلی..." -ForegroundColor Yellow
 if (Test-Path "publish") { Remove-Item "publish" -Recurse -Force }
 Get-ChildItem -Recurse -Directory -Include bin, obj -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
 Write-Host "      انجام شد." -ForegroundColor Green
 
 # بازیابی بسته‌ها
 Write-Host ""
-Write-Host "[3/4] بازیابی بسته‌های NuGet (نیازمند اینترنت)..." -ForegroundColor Yellow
+Write-Host "[3/5] بازیابی بسته‌های NuGet (نیازمند اینترنت)..." -ForegroundColor Yellow
 dotnet restore
 Write-Host "      انجام شد." -ForegroundColor Green
 
-# ساخت نسخهٔ خوداتکا
+# ساخت نسخهٔ خوداتکا — برنامهٔ اصلی
 Write-Host ""
-Write-Host "[4/4] ساخت نسخهٔ خوداتکا (ممکن است چند دقیقه طول بکشد)..." -ForegroundColor Yellow
+Write-Host "[4/5] ساخت برنامهٔ اصلی (ممکن است چند دقیقه طول بکشد)..." -ForegroundColor Yellow
 dotnet publish src\CertificateAutomation.UI\CertificateAutomation.UI.csproj `
+    -c $Configuration `
+    -r $Arch `
+    --self-contained true `
+    -p:PublishSingleFile=true `
+    -p:IncludeNativeLibrariesForSelfExtract=true `
+    -p:EnableCompressionInSingleFile=true `
+    -o publish
+
+# ساخت نسخهٔ خوداتکا — ابزار شناور ثبت شماره (فایل اجرایی جدا، کنار برنامهٔ اصلی)
+Write-Host ""
+Write-Host "[5/5] ساخت ابزار شناور (NumberStamp.exe)..." -ForegroundColor Yellow
+dotnet publish src\CertificateAutomation.NumberStamp\CertificateAutomation.NumberStamp.csproj `
     -c $Configuration `
     -r $Arch `
     --self-contained true `
@@ -63,8 +75,9 @@ Write-Host "======================================================" -ForegroundC
 Write-Host " ساخت با موفقیت انجام شد!" -ForegroundColor Green
 Write-Host "======================================================" -ForegroundColor Green
 Write-Host ""
-Write-Host " فایل اجرایی در پوشهٔ publish ساخته شد:" -ForegroundColor White
-Write-Host "   publish\CertificateAutomation.exe" -ForegroundColor Cyan
+Write-Host " فایل‌های اجرایی در پوشهٔ publish ساخته شدند:" -ForegroundColor White
+Write-Host "   publish\CertificateAutomation.exe   (برنامهٔ اصلی)" -ForegroundColor Cyan
+Write-Host "   publish\NumberStamp.exe             (ابزار شناور ثبت شماره)" -ForegroundColor Cyan
 Write-Host ""
 Write-Host " گام بعدی — ساخت فایل نصب:" -ForegroundColor White
 Write-Host "   فایل installer\setup.iss را با Inno Setup باز کنید و Compile (F9) بزنید." -ForegroundColor Cyan
@@ -73,4 +86,8 @@ Write-Host "   iscc installer\setup.iss" -ForegroundColor Cyan
 Write-Host ""
 Write-Host " برای تست سریع همین حالا:" -ForegroundColor White
 Write-Host "   .\publish\CertificateAutomation.exe" -ForegroundColor Cyan
+Write-Host "   .\publish\NumberStamp.exe" -ForegroundColor Cyan
+Write-Host ""
+Write-Host " برای استفادهٔ قابل‌حمل (بدون نصب):" -ForegroundColor White
+Write-Host "   کل پوشهٔ publish را روی فلش یا هر پوشه‌ای کپی کنید و از همان‌جا اجرا کنید." -ForegroundColor Cyan
 Write-Host ""

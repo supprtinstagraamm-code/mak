@@ -64,6 +64,14 @@ public interface ILetterIssueService
 
     /// <summary>ساخت خروجی PDF از یک نامه و ذخیرهٔ مسیر آن.</summary>
     Task<Result<string>> ExportPdfAsync(long letterId, string docxPath, CancellationToken ct = default);
+
+    /// <summary>
+    /// «ثبت دستی شماره»: فقط شمارهٔ بعدی را به‌صورت اتمیک رزرو و در سوابق ثبت می‌کند،
+    /// بدون کارمند، قالب یا سند Word. برای نامه‌هایی که بیرون از این سامانه (دستی) نوشته
+    /// شده‌اند؛ تا شمارنده یکی باقی بماند و در «سوابق نامه‌ها» هم دیده شود.
+    /// همچنین یک سطر به فایل اکسل ثبت‌های دستی اضافه می‌کند (در صورت دسترس بودن فایل).
+    /// </summary>
+    Task<Result<ManualNumberResult>> IssueManualNumberAsync(string description, string? registeredBy, CancellationToken ct = default);
 }
 
 /// <summary>تبدیل سند Word به PDF و چاپ آن.</summary>
@@ -93,6 +101,22 @@ public interface IBackupService
     Task<Result<string>> CreateBackupAsync(string? targetFolder = null, CancellationToken ct = default);
     Task<Result> RestoreBackupAsync(string zipPath, CancellationToken ct = default);
     IReadOnlyList<string> ListBackups(string folder);
+}
+
+/// <summary>
+/// ثبت سطر «ثبت دستی شماره» در یک فایل اکسل مجزا (ManualNumbers.xlsx)، به‌عنوان
+/// سابقهٔ قابل‌پیگیری و قابل‌چاپ بیرون از دیتابیس. اگر فایل در لحظهٔ نوشتن باز باشد
+/// (مثلاً کاربر در حال نگاه کردن به آن در Excel است)، خطا را برمی‌گرداند ولی
+/// باعث شکست خودِ ثبت شماره نمی‌شود — صدا زننده این را فقط به‌صورت هشدار نشان می‌دهد.
+/// </summary>
+public interface IManualNumberLogService
+{
+    /// <summary>مسیر کامل فایل اکسل.</summary>
+    string ExcelFilePath { get; }
+
+    Result AppendEntry(
+        string jalaliDate, string time, string letterNumber,
+        int jalaliYear, int serial, string description, string? registeredBy);
 }
 
 /// <summary>هش و بررسی رمز عبور.</summary>

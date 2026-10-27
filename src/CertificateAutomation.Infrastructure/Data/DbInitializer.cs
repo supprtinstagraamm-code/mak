@@ -12,7 +12,7 @@ namespace CertificateAutomation.Infrastructure.Data;
 public class DbInitializer
 {
     /// <summary>نسخه فعلی اسکیما. با هر تغییر ساختار، یک واحد افزایش می‌یابد.</summary>
-    public const int CurrentSchemaVersion = 2;
+    public const int CurrentSchemaVersion = 3;
 
     private readonly ISqliteConnectionFactory _factory;
     private readonly IPasswordHasher _hasher;
@@ -103,6 +103,13 @@ CREATE TABLE IF NOT EXISTS ReminderNotifications (
     PRIMARY KEY (ReminderId, YearMonth),
     FOREIGN KEY (ReminderId) REFERENCES Reminders(Id) ON DELETE CASCADE
 );");
+        }
+
+        if (fromVersion < 3)
+        {
+            // ستون جدید برای ردیف‌های «ثبت دستی شماره» که از ابزار شناور (خارج از صدور نامه)
+            // یا از خود برنامه، بدون کارمند/قالب ثبت می‌شوند. فقط برای رزرو/مستندسازی شماره.
+            db.Execute("ALTER TABLE Letters ADD COLUMN IsManualEntry INTEGER NOT NULL DEFAULT 0;");
         }
     }
 
@@ -264,6 +271,7 @@ CREATE TABLE Letters (
     LastPrintedAt     TEXT,
     ArchivePdfPath    TEXT,
     Description       TEXT,
+    IsManualEntry     INTEGER NOT NULL DEFAULT 0,
     IsDeleted         INTEGER NOT NULL DEFAULT 0,
     DeletedAt         TEXT,
     DeletedBy         TEXT,

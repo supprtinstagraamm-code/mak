@@ -22,6 +22,9 @@ public static class AppPaths
     public static string DefaultOutputFolder => Path.Combine(Root, "Output");
     public static string DefaultBackupFolder => Path.Combine(Root, "Backups");
 
+    /// <summary>فایل اکسل سوابق «ثبت دستی شماره» (ابزار شناور و موارد مشابه).</summary>
+    public static string ManualNumbersExcelFile => Path.Combine(Root, "ManualNumbers.xlsx");
+
     private static BootstrapConfig? _config;
 
     /// <summary>مسیر کامل فایل پایگاه داده.</summary>
