@@ -7,6 +7,9 @@ on:
     branches: [ main ]
   workflow_dispatch: {}
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
@@ -39,3 +42,24 @@ jobs:
           name: publish-portable
           path: publish
           retention-days: 30
+
+      - name: Zip publish folder
+        shell: pwsh
+        run: Compress-Archive -Path publish\* -DestinationPath publish-portable.zip -Force
+
+      # دانلود artifact از طریق API مسدود است (ریدایرکت به blob storage)، برای همین
+      # فایل زیپ‌شده را مستقیماً روی یک شاخهٔ مجزا (ci-publish) پوش می‌کنیم تا با
+      # git معمولی قابل دریافت باشد.
+      - name: Push portable build to ci-publish branch
+        shell: bash
+        run: |
+          cp publish-portable.zip "$RUNNER_TEMP/publish-portable.zip"
+          git config user.email "ci-bot@local"
+          git config user.name "CI Bot"
+          git checkout --orphan ci-publish-tmp
+          git rm -rf . > /dev/null 2>&1 || true
+          git clean -fdx
+          cp "$RUNNER_TEMP/publish-portable.zip" publish-portable.zip
+          git add publish-portable.zip
+          git commit -m "ci: portable publish build [skip ci]"
+          git push origin HEAD:refs/heads/ci-publish --force
