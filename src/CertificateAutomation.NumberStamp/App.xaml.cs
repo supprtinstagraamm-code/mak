@@ -15,7 +15,7 @@ namespace CertificateAutomation.NumberStamp;
 /// کوچک شناور نشان می‌دهد. منطق شماره‌گذاری و ثبت اکسل هم همان سرویس‌های برنامهٔ اصلی است؛
 /// اینجا کد تکراری نیست.
 /// </summary>
-public partial class App : Application
+public partial class App : System.Windows.Application
 {
     // نام‌گذاری سراسری (Global\) تا هم بین چند نشست کاربر فعلی و هم بین کاربران مختلف
     // روی یک سرور ترمینال، از دو نمونه هم‌زمان جلوگیری شود.
