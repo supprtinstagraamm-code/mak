@@ -53,13 +53,21 @@ jobs:
       - name: Push portable build to ci-publish branch
         shell: bash
         run: |
-          cp publish-portable.zip "$RUNNER_TEMP/publish-portable.zip"
+          set +e
+          cp publish-portable.zip ../publish-portable.zip.bak
           git config user.email "ci-bot@local"
           git config user.name "CI Bot"
-          git checkout --orphan ci-publish-tmp
-          git rm -rf . > /dev/null 2>&1 || true
-          git clean -fdx
-          cp "$RUNNER_TEMP/publish-portable.zip" publish-portable.zip
-          git add publish-portable.zip
-          git commit -m "ci: portable publish build [skip ci]"
-          git push origin HEAD:refs/heads/ci-publish --force
+          : > /tmp/out.log
+          git checkout --orphan ci-publish-tmp >> /tmp/out.log 2>&1
+          git rm -rf . >> /tmp/out.log 2>&1
+          git clean -fdx >> /tmp/out.log 2>&1
+          cp ../publish-portable.zip.bak publish-portable.zip
+          git add publish-portable.zip >> /tmp/out.log 2>&1
+          git commit -m "ci: portable publish build [skip ci]" >> /tmp/out.log 2>&1
+          git push origin HEAD:refs/heads/ci-publish --force >> /tmp/out.log 2>&1
+          rc=$?
+          if [ $rc -ne 0 ]; then
+            echo "::error::git push to ci-publish failed (rc=$rc): $(tail -c 1800 /tmp/out.log | tr '\n' ' ' | tr '\r' ' ')"
+            exit 1
+          fi
+          echo "pushed ci-publish branch successfully"
