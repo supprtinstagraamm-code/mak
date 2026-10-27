@@ -54,15 +54,16 @@ jobs:
         shell: bash
         run: |
           set +e
-          cp publish-portable.zip ../publish-portable.zip.bak
+          split -b 90m -d -a 2 publish-portable.zip publish-portable.zip.part-
+          mkdir ../_parts && mv publish-portable.zip.part-* ../_parts/
           git config user.email "ci-bot@local"
           git config user.name "CI Bot"
           : > /tmp/out.log
           git checkout --orphan ci-publish-tmp >> /tmp/out.log 2>&1
           git rm -rf . >> /tmp/out.log 2>&1
           git clean -fdx >> /tmp/out.log 2>&1
-          cp ../publish-portable.zip.bak publish-portable.zip
-          git add publish-portable.zip >> /tmp/out.log 2>&1
+          mv ../_parts/publish-portable.zip.part-* .
+          git add publish-portable.zip.part-* >> /tmp/out.log 2>&1
           git commit -m "ci: portable publish build [skip ci]" >> /tmp/out.log 2>&1
           git push origin HEAD:refs/heads/ci-publish --force >> /tmp/out.log 2>&1
           rc=$?
