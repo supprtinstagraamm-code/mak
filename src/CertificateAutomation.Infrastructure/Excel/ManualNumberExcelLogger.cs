@@ -74,7 +74,7 @@ public class ManualNumberExcelLogger : IManualNumberLogService
             sheet.Cell(nextRow, 9).Value = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
 
             sheet.Columns(1, Headers.Length).AdjustToContents();
-            sheet.SheetView.RightToLeft = true;
+            sheet.RightToLeft = true;
 
             workbook.SaveAs(ExcelFilePath);
 
@@ -105,7 +105,7 @@ public class ManualNumberExcelLogger : IManualNumberLogService
     {
         var workbook = new XLWorkbook();
         var sheet = workbook.Worksheets.Add("ثبت‌های دستی");
-        sheet.SheetView.RightToLeft = true;
+        sheet.RightToLeft = true;
 
         for (var i = 0; i < Headers.Length; i++)
         {
